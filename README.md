@@ -21,14 +21,14 @@ If you don't have `node` or `npm` a.k.a. Node Package Manager installed, [see he
 
 `clasp --version` To make sure you have it installed.  
 
-`clasp login` To make sure you are logged in to your umsl account
+`clasp login` To make sure you are logged in to your umsl account  
 
 ### Contributing
 
-**If cloning the project from Google**
+**If cloning the project from Google**  
 `clasp clone <scriptId>` Where `<scriptId>` can be found at `file/project properties/info` in google app scripts editor.  
 
-**If using github to work on the project**
+**If using github to work on the project**  
 1. Clone the repository  
 `git clone https://github.com/UMSL-Information-Technology-Club/ladue-chapel-scripts.git` (or use ssh)  
 
@@ -41,7 +41,7 @@ If you don't have `node` or `npm` a.k.a. Node Package Manager installed, [see he
 4. To save / commit your changes to github:  
 `git add .` and `git commit -m"<your-short-descriptive-message>"`  
 
-**If the project has alredy been cloned from GitHub:**
+**If the project has alredy been cloned from GitHub:**  
 `git pull` first, and then you are ready to make changes!  
 
 
