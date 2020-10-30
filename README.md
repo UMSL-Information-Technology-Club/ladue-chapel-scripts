@@ -41,6 +41,8 @@ If you don't have `node` or `npm` a.k.a. Node Package Manager installed, [see he
 4. To save / commit your changes to github:  
 `git add .` and `git commit -m"<your-short-descriptive-message>"`  
 
+5. When you believe your code is ready for review, create a new Pull Request  
+
 **If the project has alredy been cloned from GitHub:**  
 `git pull` first, and then you are ready to make changes!  
 
