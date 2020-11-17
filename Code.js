@@ -8,7 +8,6 @@ function myFunction() {
 
 function putIntoNewSheet() {
   getRow();
-  
 }
 
 function createNewPage(name) {
@@ -35,7 +34,6 @@ function getRow() {
   var rows = SpreadsheetApp.getActiveSheet().getRange(2,1,1,23).getValues() 
   Logger.log("row: ");
   Logger.log(rows);
-
   
  // rows.forEach(function(row) {
 // var newRow = row[1];
@@ -60,6 +58,9 @@ function getSpreadsheetRange(start, end) {
  // Active Range: A1:D4
  var activeRange = selection.getActiveRange();
 }
+
+
+
 
 // Trying to figure out how to select data from row 2
 
