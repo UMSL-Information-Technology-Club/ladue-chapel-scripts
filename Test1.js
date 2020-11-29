@@ -53,12 +53,15 @@ function getMainSheet(){
   return mainSheet;
 }
 
+
+
 function createNewSheet(sheetName) {
   //Function to create a new sheet and change the name of that sheet
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   newSheet = activeSpreadsheet.insertSheet();
   newSheet.setName(sheetName);
 }
+
 
 function copyRowToColumn(sheetName){
   //Get the Main Sheet

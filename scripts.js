@@ -2,8 +2,10 @@
  * Considerations:
  * - How to tell if agency is editing, or if it is a duplicate agency name?
  * - What to do if agency edits? Replace data or create another row?
- * - What data can the trigger functions pass to us?
  * - BugFix: "indexOf" will not work for Sheet object. Either get the name value out of the sheet object, or get array of strings that are the sheet names to compare
+ * - What data can the trigger functions pass to us?
+ * - Look into trigger events, compare pros/cons of using UI trigger vs creating Trigger with code
+ * - Test if the new transpose function works correctly
  */
 
 
@@ -51,7 +53,7 @@ function getExistingAgencies(){
   //     existingAgencies.push(agencyName)
   //   }
   // })
-    
+  
   return existingAgencies;
 }
 
@@ -111,6 +113,7 @@ function createAgencyTabs(newAgencies, mainSheet) {
   }
 }
 
+
 // Creates a single tab for the name of the agency
 // agency is the name of the agency
 function createAgencyTab(agency, mainSheet){
@@ -131,12 +134,14 @@ function createAgencyTab(agency, mainSheet){
   pageRange.setValues(values);
 }
 
+
 // UTILITY FUNCTIONS
 
 /**
  * Objectives:
  * - transpose data in a row so that it appears as a column
  */
+
 function transposeRow() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
@@ -152,6 +157,7 @@ function transposeRow() {
   
   sheet.insertChart(chart);
 }
+
   
 function createNewPage(name) {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
