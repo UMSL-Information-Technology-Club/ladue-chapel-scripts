@@ -10,7 +10,7 @@
 
 
 // Global variables
-const questionsLength = 23;
+const questionsLength = 34;
 const primarySheet = "mainSheet"
 
 function main() {
@@ -18,16 +18,24 @@ function main() {
   let mainSheet = SpreadsheetApp.getActive().getSheetByName(primarySheet);
   
   // Get a list of all exisitingAgencies (ie agencies with their own tab)
-  // returns array of Sheet objects
-  let existingAgencies = getExistingAgencies();
+  // returns array of strings
+  let existingTabNames = getExistingAgencies();
+
+  Logger.log(existingTabNames)
   
   // Get all agency names in the main sheet
   // returns array of strings
-  let allNames = mainSheetNames(mainSheet);
+  let agencyNames = mainSheetNames(mainSheet);
+
+  Logger.log(agencyNames)
+
   
   // Get a list names which are on the main sheet but aren't tabs
   // returns array of strings
-  let newAgencies = newAdditions(allNames, existingAgencies);
+  let newAgencies = newAdditions(agencyNames, existingTabNames);
+
+  Logger.log(newAgencies)
+
   
   // Create new tabs/pages for newly added agencies
   createAgencyTabs(newAgencies, mainSheet)
@@ -44,17 +52,15 @@ function getExistingAgencies(){
 
   // return a slice of the sheets that is all but the first sheet
   var existingAgencies = sheets.slice(1);
+
+  // iterate through each sheet name and add it to the list
+  var agencyNames = existingAgencies.map(sheet => {
+    var agencyName = sheet.getName();
+    //ignore the name of the mainsheet (which is at index 0.0). may be better to use main sheet rather than index
+    return agencyName
+  })
   
-  // // iterate through each sheet name and add it to the list
-  // sheets.forEach(function(sheet,index) {
-  //   var agencyName = sheet.getName();
-  //   //ignore the name of the mainsheet (which is at index 0.0). may be better to use main sheet rather than index
-  //   if(index != 0){
-  //     existingAgencies.push(agencyName)
-  //   }
-  // })
-  
-  return existingAgencies;
+  return agencyNames;
 }
 
 // Returns names of every agency on the main sheet
@@ -81,7 +87,7 @@ function newAdditions(allAgencies, existingAgencies){
   let newAgencies = [];
   allAgencies.forEach(function(agency) {
     // If the agency name is not in existingAgencies list, add it to the newAgencies list
-    if(existingAgencies.indexOf(agency[0]) == -1) {
+    if(existingAgencies.indexOf(agency) == -1) {
       newAgencies.push(agency);
     }
   })
@@ -92,47 +98,78 @@ function createAgencyTabs(newAgencies, mainSheet) {
   var rowLevel = 2; // we want to start at row 2 (first row after the row headings)
   var range = mainSheet.getRange(rowLevel, 1, 1, questionsLength); // defines dimensions of row
   var values = range.getValues();
+  var agencyName = values[0][2]
   // While loop will continute to execute until there are no more entries
-  while(values[0][2]){
-    range = mainSheet.getRange(rowLevel, 1, 1, questionsLength);
-    values = range.getValues();
+  while(agencyName){
     // if this row is one of the new agencies (values[0][2] is agency name) create a new tab and add the data
-    if(newAgencies.indexOf(values[0][2]) > -1){
-      createNewPage(values[0][2])
-      var newPage = SpreadsheetApp.getActive().getSheetByName(values[0][2])
-      // Set current range to the top 23 cells
-      var pageRange = newPage.getRange(1,1,1, questionsLength); 
-      // Add column titles to the new page
-      pageRange.setValues(getColumnTitles(mainSheet));
-      // Change range to the next row down
-      pageRange = newPage.getRange(2,1,1, questionsLength);
-      // now add that agencies information in the row
-      pageRange.setValues(values);
+    if(newAgencies.indexOf(agencyName) > -1 && agencyName) {
+      try {
+        var newSheet = createNewPage(agencyName)
+        Logger.log('new sheet created successfully: ' + agencyName)
+      } catch (error) {
+        Logger.log('error caught creating new page: ' + error.toString())
+      }
+
+      if(!newSheet) {
+        newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(agencyName)
+      }
+
+        var pageRange = newSheet.getRange(1,1,1, questionsLength); 
+        // Add column titles to the new page
+        // var columnTitles = getColumnTitles(mainSheet)
+        var columnTitles = getColumnTitles(mainSheet)
+  
+        Logger.log("Column Titles: " + columnTitles)
+        
+        pageRange.setValues(columnTitles);
+        // Change range to the next row down
+        pageRange = newSheet.getRange(2,1,1, questionsLength);
+        // now add that agencies information in the row
+        pageRange.setValues(values);
+  
+        // transposeRow(newSheet)
+        var horizontalRange = newSheet.getRange(`A1:B${questionsLength}`)
+        var rangeValues = horizontalRange.getValues() // 2D array
+        Logger.log("range values: " + rangeValues + " length: " + rangeValues.length)
+        var transposedValues = rangeValues[0].map(function (_, c) { return rangeValues.map(function (r) { return r[c]; }); });
+        for(let i = 0; i < rangeValues[0].length; i++) {
+          newSheet.getRange(i+1, 1, 1, 2).setValues([[rangeValues[0][i].toString(), rangeValues[1][i].toString()]])
+        }
+
+        Logger.log('transposed values: ' + transposedValues + " length: " + transposedValues.length)
+
+        // var transposedRange = newSheet.getRange(1, 1, questionsLength, 2); 
+        // Logger.log('transposed range: ' + transposedRange)
+        // transposedRange.setValues(transposedValues)
     }
     rowLevel++; // moves row level down to the next row
+    range = mainSheet.getRange(rowLevel, 1, 1, questionsLength);
+    values = range.getValues();
+    agencyName = values[0][2]
   }
 }
 
 
 // Creates a single tab for the name of the agency
-// agency is the name of the agency
-function createAgencyTab(agency, mainSheet){
-  createNewPage(agency);
+// // agency is the name of the agency
+// function createAgencyTab(agency, mainSheet){
+//   createNewPage(agency);
 
-  var newPage = SpreadsheetApp.getActive().getSheetByName(agency)
-  if(!newPage) return;
-  // Set current range to the top 23 cells
-  var pageRange = newPage.getRange(1,1,1, questionsLength); 
+//   var newPage = SpreadsheetApp.getActive().getSheetByName(agency)
+//   if(!newPage) return;
+//   // Set current range to the top 23 cells
+//   var pageRange = newPage.getRange(1,1,1, questionsLength); 
   
-  var columnTitles = getColumnTitles(mainSheet)
+//   var columnTitles = pageRange.getValues()
 
-  // Add column titles to the new page
-  pageRange.setValues(columnTitles);
-  // Change range to the next row down
-  pageRange = newPage.getRange(2,1,1, questionsLength);
-  // now add that agencies information in the row
-  pageRange.setValues(values);
-}
+//   // Add column titles to the new page
+//   pageRange.setValues(columnTitles);
+//   // Change range to the next row down
+//   pageRange = newPage.getRange(2,1,1, questionsLength);
+//   // now add that agencies information in the row
+//   pageRange.setValues(values);
+
+// }
 
 
 // UTILITY FUNCTIONS
@@ -142,12 +179,12 @@ function createAgencyTab(agency, mainSheet){
  * - transpose data in a row so that it appears as a column
  */
 
-function transposeRow() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheets()[0];
+function transposeRow(sheet) {
+  // var ss = SpreadsheetApp.getActiveSpreadsheet();
+  // var sheet = ss.getSheets()[0];
   
-  // Why "21"? It was "23" in an earlier function
   var range = sheet.getRange(`A1:B${questionsLength}`);
+
   var chart = sheet.newChart()
       .setChartType(Charts.ChartType.BAR)
       .addRange(range)
@@ -158,14 +195,15 @@ function transposeRow() {
   sheet.insertChart(chart);
 }
 
-  
+// returns new sheet reference
 function createNewPage(name) {
+  Logger.log("Creating new page: " + name)
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var yourNewSheet = activeSpreadsheet.insertSheet();
-  yourNewSheet.setName(name);
-
+  var yourNewSheet = activeSpreadsheet.insertSheet(name);
+  yourNewSheet.setName(name)
+  return yourNewSheet;
 }
-  
+
 // Gets column titles from the main page.
 function getColumnTitles(mainSheet) {
   var range = mainSheet.getRange(1, 1, 1, questionsLength);
@@ -177,3 +215,8 @@ function getColumnTitles(mainSheet) {
 
 // getRange(row, column, numRows, numColumns)
 // Returns the range with the top left cell at the given coordinates with the given number of rows and columns.
+
+function deleteAllSheets() {
+  // delete all sheets
+
+}
